@@ -14,6 +14,11 @@ public static class SettingsManager
     };
 
     /// <summary>
+    /// 是否为首次运行（配置文件不存在时创建）
+    /// </summary>
+    public static bool IsFirstRun { get; private set; }
+
+    /// <summary>
     /// 加载设置，若配置文件不存在则创建默认设置
     /// </summary>
     public static AppSettings Load()
@@ -24,6 +29,7 @@ public static class SettingsManager
             {
                 var json = File.ReadAllText(SettingsFilePath);
                 var settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
+                IsFirstRun = false;
                 return settings ?? CreateDefault();
             }
         }
@@ -32,6 +38,7 @@ public static class SettingsManager
             // 配置文件损坏，重新创建默认设置
         }
 
+        IsFirstRun = true;
         return CreateDefault();
     }
 

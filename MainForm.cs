@@ -16,6 +16,12 @@ public partial class MainForm : Form
 
         _settings = SettingsManager.Load();
 
+        // 首次启动时自动注册开机自启
+        if (SettingsManager.IsFirstRun && _settings.AutoStart)
+        {
+            AutoStartManager.SetAutoStart(true);
+        }
+
         // 应用语言设置
         LocalizationService.SetLanguage(_settings.Language);
 

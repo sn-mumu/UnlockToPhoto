@@ -21,7 +21,7 @@ public class AppSettings
     /// 是否开机自启动
     /// </summary>
     [JsonPropertyName("autoStart")]
-    public bool AutoStart { get; set; } = false;
+    public bool AutoStart { get; set; } = true;
 
     /// <summary>
     /// 选中的摄像头设备索引，默认 0
