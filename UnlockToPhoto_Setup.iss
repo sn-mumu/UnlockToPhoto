@@ -26,6 +26,7 @@ UninstallDisplayIcon={app}\icon\icon.ico
 MinVersion=10.0
 
 [Languages]
+Name: "chinesesimplified"; MessagesFile: "ChineseSimplified.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 
@@ -54,13 +55,50 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 
 [Code]
 // 检测 .NET 6 运行时
+function CheckDotNet6InPath(const BasePath: String): Boolean;
+var
+  FindRec: TFindRec;
+  RuntimePath: String;
+begin
+  Result := False;
+  RuntimePath := BasePath + 'shared\Microsoft.NETCore.App';
+  if not DirExists(RuntimePath) then Exit;
+
+  if FindFirst(ExpandConstant(RuntimePath + '\*'), FindRec) then
+  begin
+    repeat
+      if (FindRec.Attributes and FILE_ATTRIBUTE_DIRECTORY <> 0) and (Pos('6.', FindRec.Name) = 1) then
+      begin
+        Result := True;
+        Exit;
+      end;
+    until not FindNext(FindRec);
+    FindClose(FindRec);
+  end;
+end;
+
 function IsDotNet6Installed(): Boolean;
 var
-  installed: Cardinal;
+  InstallPath: String;
 begin
-  Result := RegQueryDWordValue(HKLM, 'SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedfx\Microsoft.NETCore.App', '6.', installed) and (installed = 1);
-  if not Result then
-    Result := RegQueryDWordValue(HKLM32, 'SOFTWARE\dotnet\Setup\InstalledVersions\x86\sharedfx\Microsoft.NETCore.App', '6.', installed) and (installed = 1);
+  Result := False;
+
+  // 方法1: 从注册表获取 dotnet 安装路径
+  if RegQueryStringValue(HKLM, 'SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedhost', 'Path', InstallPath) then
+  begin
+    if CheckDotNet6InPath(InstallPath) then
+    begin
+      Result := True;
+      Exit;
+    end;
+  end;
+
+  // 方法2: 检查默认安装路径
+  if CheckDotNet6InPath('C:\Program Files\dotnet\') then
+  begin
+    Result := True;
+    Exit;
+  end;
 end;
 
 function InitializeSetup(): Boolean;
