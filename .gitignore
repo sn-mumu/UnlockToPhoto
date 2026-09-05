@@ -1,0 +1,12 @@
+bin/
+obj/
+publish/
+.vs/
+*.user
+*.suo
+*.cache
+Thumbs.db
+Desktop.ini
+*.tmp
+*.log
+settings.json
