@@ -6,7 +6,7 @@ Windows 桌面应用，在系统解锁时自动调用摄像头拍照并保存，
 
 ## 软件截图
 
-![设置界面](screenshot/p1.png)
+![设置界面](screenshot/setting.png)
 
 ## 功能特性
 

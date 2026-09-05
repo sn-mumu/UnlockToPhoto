@@ -6,7 +6,7 @@ A Windows desktop application that automatically takes a photo using your webcam
 
 ## Screenshot
 
-![Settings](screenshot/p1.png)
+![Settings](screenshot/setting-EN.png)
 
 ## Features
 

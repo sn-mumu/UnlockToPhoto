@@ -16,6 +16,9 @@ public partial class MainForm : Form
 
         _settings = SettingsManager.Load();
 
+        // 应用语言设置
+        LocalizationService.SetLanguage(_settings.Language);
+
         // 加载自定义图标
         var iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "icon", "icon.ico");
         Icon? appIcon = null;
@@ -31,15 +34,15 @@ public partial class MainForm : Form
         _trayIcon = new NotifyIcon
         {
             Icon = appIcon ?? SystemIcons.Application,
-            Text = "解锁即拍照 - 运行中",
+            Text = LocalizationService.T("TrayRunning"),
             Visible = true
         };
 
         // 托盘右键菜单
         var contextMenu = new ContextMenuStrip();
-        contextMenu.Items.Add("设置", null, OnSettingsClick);
+        contextMenu.Items.Add(LocalizationService.T("TraySettings"), null, OnSettingsClick);
         contextMenu.Items.Add(new ToolStripSeparator());
-        contextMenu.Items.Add("退出", null, OnExitClick);
+        contextMenu.Items.Add(LocalizationService.T("TrayExit"), null, OnExitClick);
         _trayIcon.ContextMenuStrip = contextMenu;
         _trayIcon.DoubleClick += OnSettingsClick;
 
@@ -60,8 +63,8 @@ public partial class MainForm : Form
                     // 更新托盘提示
                     _trayIcon.ShowBalloonTip(
                         3000,
-                        "解锁即拍照",
-                        $"照片已保存: {Path.GetFileName(result)}",
+                        LocalizationService.T("AppName"),
+                        LocalizationService.T("PhotoSaved", Path.GetFileName(result)),
                         ToolTipIcon.Info);
                 }
             });

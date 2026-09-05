@@ -7,6 +7,7 @@ namespace UnlockToPhoto;
 public partial class SettingsForm : Form
 {
     private readonly AppSettings _settings;
+    private readonly ComboBox _cmbLanguage;
     private readonly TextBox _txtSavePath;
     private readonly CheckBox _chkAutoStart;
     private readonly ComboBox _cmbCamera;
@@ -23,9 +24,12 @@ public partial class SettingsForm : Form
     {
         _settings = settings;
 
+        // 应用当前语言
+        LocalizationService.SetLanguage(settings.Language);
+
         // 窗体属性
-        Text = "解锁即拍照 - 设置";
-        Size = new System.Drawing.Size(500, 560);
+        Text = LocalizationService.T("SettingsTitle");
+        Size = new System.Drawing.Size(500, 595);
         StartPosition = FormStartPosition.CenterScreen;
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
@@ -38,10 +42,45 @@ public partial class SettingsForm : Form
 
         int y = 20;
 
+        // ---- 语言选择（第一栏）----
+        var lblLanguage = new Label
+        {
+            Text = LocalizationService.T("Language"),
+            Location = new System.Drawing.Point(20, y),
+            AutoSize = true
+        };
+
+        _cmbLanguage = new ComboBox
+        {
+            DropDownStyle = ComboBoxStyle.DropDownList,
+            Location = new System.Drawing.Point(110, y - 3),
+            Width = 200
+        };
+
+        // 填充语言列表
+        var langs = LocalizationService.GetSupportedLanguages();
+        int langIndex = 0;
+        for (int i = 0; i < langs.Length; i++)
+        {
+            string displayKey = langs[i] switch
+            {
+                "zh" => "LangZh",
+                "en" => "LangEn",
+                "ja" => "LangJa",
+                _ => "LangZh"
+            };
+            _cmbLanguage.Items.Add(LocalizationService.T(displayKey));
+            if (langs[i] == settings.Language)
+                langIndex = i;
+        }
+        _cmbLanguage.SelectedIndex = langIndex;
+
+        y += 35;
+
         // ---- 摄像头设备选择 ----
         var lblCamera = new Label
         {
-            Text = "摄像头设备:",
+            Text = LocalizationService.T("Camera"),
             Location = new System.Drawing.Point(20, y),
             AutoSize = true
         };
@@ -59,7 +98,7 @@ public partial class SettingsForm : Form
 
         if (_cameraIndices.Count == 0)
         {
-            _cmbCamera.Items.Add("（未检测到摄像头）");
+            _cmbCamera.Items.Add(LocalizationService.T("NoCamera"));
             _cmbCamera.Enabled = false;
         }
         else
@@ -71,7 +110,7 @@ public partial class SettingsForm : Form
                 if (i < cameraNames.Count)
                     displayName = cameraNames[i];
                 else
-                    displayName = $"摄像头设备 {_cameraIndices[i]}";
+                    displayName = $"{LocalizationService.T("CameraDefault")} {_cameraIndices[i]}";
 
                 _cmbCamera.Items.Add(displayName);
 
@@ -84,25 +123,18 @@ public partial class SettingsForm : Form
         y += 35;
 
         // ---- 实时预览区域 ----
-        var lblPreview = new Label
-        {
-            Text = "实时预览:",
-            Location = new System.Drawing.Point(20, y),
-            AutoSize = true
-        };
-
         _chkPreview = new CheckBox
         {
-            Text = "开启",
-            Location = new System.Drawing.Point(80, y - 2),
+            Text = LocalizationService.T("EnablePreview"),
+            Location = new System.Drawing.Point(20, y),
             AutoSize = true
         };
         _chkPreview.CheckedChanged += OnPreviewToggle;
 
         _lblPreviewStatus = new Label
         {
-            Text = "已关闭",
-            Location = new System.Drawing.Point(130, y),
+            Text = LocalizationService.T("PreviewStatusOff"),
+            Location = new System.Drawing.Point(200, y + 2),
             AutoSize = true,
             ForeColor = System.Drawing.Color.Gray
         };
@@ -123,7 +155,7 @@ public partial class SettingsForm : Form
         // ---- 照片保存路径 ----
         var lblSavePath = new Label
         {
-            Text = "保存路径:",
+            Text = LocalizationService.T("SavePath"),
             Location = new System.Drawing.Point(20, y),
             AutoSize = true
         };
@@ -137,7 +169,7 @@ public partial class SettingsForm : Form
 
         var btnBrowse = new Button
         {
-            Text = "浏览...",
+            Text = LocalizationService.T("Browse"),
             Location = new System.Drawing.Point(385, y - 4),
             Width = 75
         };
@@ -148,7 +180,7 @@ public partial class SettingsForm : Form
         // ---- 开机自启动 ----
         _chkAutoStart = new CheckBox
         {
-            Text = "开机自动启动",
+            Text = LocalizationService.T("AutoStart"),
             Location = new System.Drawing.Point(110, y),
             Checked = settings.AutoStart
         };
@@ -158,7 +190,7 @@ public partial class SettingsForm : Form
         // ---- 按钮 ----
         var btnOk = new Button
         {
-            Text = "确定",
+            Text = LocalizationService.T("OK"),
             DialogResult = DialogResult.OK,
             Location = new System.Drawing.Point(280, y),
             Width = 85
@@ -167,7 +199,7 @@ public partial class SettingsForm : Form
 
         var btnCancel = new Button
         {
-            Text = "取消",
+            Text = LocalizationService.T("Cancel"),
             DialogResult = DialogResult.Cancel,
             Location = new System.Drawing.Point(380, y),
             Width = 85
@@ -178,8 +210,9 @@ public partial class SettingsForm : Form
 
         Controls.AddRange(new Control[]
         {
+            lblLanguage, _cmbLanguage,
             lblCamera, _cmbCamera,
-            lblPreview, _chkPreview, _lblPreviewStatus, _picPreview,
+            _chkPreview, _lblPreviewStatus, _picPreview,
             lblSavePath, _txtSavePath, btnBrowse,
             _chkAutoStart, btnOk, btnCancel
         });
@@ -209,7 +242,7 @@ public partial class SettingsForm : Form
         else
         {
             StopPreview();
-            _lblPreviewStatus.Text = "已关闭";
+            _lblPreviewStatus.Text = LocalizationService.T("PreviewStatusOff");
         }
     }
 
@@ -230,7 +263,7 @@ public partial class SettingsForm : Form
 
         if (_cameraIndices.Count == 0 || _cmbCamera.SelectedIndex < 0)
         {
-            _lblPreviewStatus.Text = "无可用设备";
+            _lblPreviewStatus.Text = LocalizationService.T("NoDevice");
             return;
         }
 
@@ -243,13 +276,13 @@ public partial class SettingsForm : Form
 
             if (!_previewCapture.IsOpened())
             {
-                _lblPreviewStatus.Text = "无法打开设备";
+                _lblPreviewStatus.Text = LocalizationService.T("OpenFailed");
                 _previewCapture.Dispose();
                 _previewCapture = null;
                 return;
             }
 
-            _lblPreviewStatus.Text = "预览中...";
+            _lblPreviewStatus.Text = LocalizationService.T("PreviewStatusOn");
 
             _previewTimer?.Dispose();
             _previewTimer = new System.Windows.Forms.Timer { Interval = 50 };
@@ -258,7 +291,7 @@ public partial class SettingsForm : Form
         }
         catch
         {
-            _lblPreviewStatus.Text = "预览失败";
+            _lblPreviewStatus.Text = LocalizationService.T("PreviewFailed");
         }
     }
 
@@ -351,7 +384,7 @@ public partial class SettingsForm : Form
         using var dialog = new FolderBrowserDialog
         {
             SelectedPath = _txtSavePath.Text,
-            Description = "选择照片保存目录"
+            Description = LocalizationService.T("SelectFolder")
         };
 
         if (dialog.ShowDialog() == DialogResult.OK)
@@ -362,12 +395,25 @@ public partial class SettingsForm : Form
 
     private void OnOkClick(object? sender, EventArgs e)
     {
+        var originalLanguage = _settings.Language;
+
         var newSavePath = _txtSavePath.Text.Trim();
         if (string.IsNullOrEmpty(newSavePath))
         {
-            MessageBox.Show("保存路径不能为空", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(
+                LocalizationService.T("SavePathEmpty"),
+                LocalizationService.T("Tip"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
             DialogResult = DialogResult.None;
             return;
+        }
+
+        // 保存语言设置
+        var langs = LocalizationService.GetSupportedLanguages();
+        if (_cmbLanguage.SelectedIndex >= 0 && _cmbLanguage.SelectedIndex < langs.Length)
+        {
+            _settings.Language = langs[_cmbLanguage.SelectedIndex];
         }
 
         _settings.SavePath = newSavePath;
@@ -380,6 +426,20 @@ public partial class SettingsForm : Form
 
         SettingsManager.Save(_settings);
         AutoStartManager.SetAutoStart(_settings.AutoStart);
+
+        // 语言变更提示
+        if (_cmbLanguage.SelectedIndex >= 0 && _cmbLanguage.SelectedIndex < langs.Length)
+        {
+            var newLang = langs[_cmbLanguage.SelectedIndex];
+            if (newLang != originalLanguage)
+            {
+                MessageBox.Show(
+                    LocalizationService.T("RestartRequired"),
+                    LocalizationService.T("Tip"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+        }
 
         Close();
     }

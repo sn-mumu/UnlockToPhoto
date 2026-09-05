@@ -1,3 +1,4 @@
+using UnlockToPhoto.Models;
 using UnlockToPhoto.Services;
 
 namespace UnlockToPhoto;
@@ -9,12 +10,16 @@ internal static class Program
     {
         ApplicationConfiguration.Initialize();
 
+        // 加载设置并应用语言
+        var settings = SettingsManager.Load();
+        LocalizationService.SetLanguage(settings.Language);
+
         // 检测摄像头是否可用
         if (!CameraService.IsCameraAvailable())
         {
             MessageBox.Show(
-                "未检测到可用摄像头！\n\n请确保摄像头已正确连接后重试。",
-                "解锁即拍照",
+                LocalizationService.T("NoCameraMsg"),
+                LocalizationService.T("NoCameraTitle"),
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Warning);
             return;

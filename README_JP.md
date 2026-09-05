@@ -6,7 +6,7 @@ Windows システムのロック解除時にウェブカメラで自動的に写
 
 ## スクリーンショット
 
-![設定画面](screenshot/p1.png)
+![設定画面](screenshot/setting-JP.png)
 
 ## 機能
 
